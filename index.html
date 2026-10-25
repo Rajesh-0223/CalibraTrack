@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="CalibraTrack instrument calibration management dashboard." />
+    <title>CalibraTrack | Calibration Management</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/app.js" defer></script>
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="#" aria-label="CalibraTrack home">
+                <span class="brand-mark">C</span>
+                <span>CalibraTrack<small>INSTRUMENT CONTROL</small></span>
+            </a>
+
+            <p class="nav-label">WORKSPACE</p>
+            <nav class="navigation" aria-label="Main navigation">
+                <a class="nav-link active" href="#dashboard">▦ Dashboard</a>
+                <a class="nav-link" href="#instruments">▤ Instruments</a>
+                <a class="nav-link" href="#schedule">◷ Calibration Schedule</a>
+                <a class="nav-link" href="#history">↻ Calibration History</a>
+                
+            </nav>
+
+            <div class="sidebar-bottom">
+                <span class="status-dot"></span>
+                Demo workspace
+                <p>CalibraTrack · Version 1.0</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">CALIBRATION OPERATIONS</p>
+                    <h1>Dashboard</h1>
+                </div>
+                <div class="user-chip">
+                    <span class="avatar">R</span>
+                    <span>Rajesh<small>Calibration Engineer</small></span>
+                </div>
+            </header>
+
+            <section id="dashboard" class="welcome">
+                <div>
+                    <p class="eyebrow">OVERVIEW</p>
+                    <h2>Welcome, Rajesh 👋</h2>
+                    <p>Monitor instrument status and stay ahead of calibration due dates.</p>
+                </div>
+
+                <button id="addInstrumentBtn" class="primary-btn">
+                    + Add Instrument
+                </button>
+                <button type="button" id="exportCsvBtn" class="btn primary-btn">
+                    Export CSV
+                </button>
+
+                <!-- Add Instrument Modal -->
+                <div id="instrumentModal" class="modal" aria-hidden="true">
+                    <div class="modal-backdrop" data-close-modal></div>
+
+                    <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+                        <div class="modal-header">
+                            <div>
+                                <p class="eyebrow">ASSET MANAGEMENT</p>
+                                <h2 id="modalTitle">Add Instrument</h2>
+                                <p>Enter the instrument details below.</p>
+                            </div>
+                            <button type="button" id="closeModalBtn" class="close-btn"
+                                aria-label="Close form">&times;</button>
+                        </div>
+
+                        <form id="instrumentForm">
+                            <input type="hidden" id="editingId" />
+
+                            <div class="form-grid">
+                                <label>
+                                    Asset ID *
+                                    <input id="assetId" required maxlength="30" placeholder="e.g. CAL-009" />
+                                </label>
+
+                                <label>
+                                    Instrument Name *
+                                    <input id="instrumentName" required maxlength="100"
+                                        placeholder="e.g. Digital Multimeter" />
+                                </label>
+
+                                <label>
+                                    Instrument Type *
+                                    <select id="instrumentType" required>
+                                        <option value="">Select type</option>
+                                        <option>Electrical</option>
+                                        <option>Electronic</option>
+                                        <option>Thermal</option>
+                                        <option>Pressure</option>
+                                        <option>Dimensional</option>
+                                        <option>Other</option>
+                                    </select>
+                                </label>
+
+                                <label>
+                                    Manufacturer
+                                    <input id="manufacturer" maxlength="100" placeholder="e.g. Fluke" />
+                                </label>
+
+                                <label>
+                                    Serial Number
+                                    <input id="serialNumber" maxlength="60" placeholder="Enter serial number" />
+                                </label>
+
+                                <label>
+                                    Location *
+                                    <input id="instrumentLocation" required maxlength="100"
+                                        placeholder="e.g. Electrical Lab" />
+                                </label>
+
+                                <label>
+                                    Last Calibration Date *
+                                    <input type="date" id="lastCalibration" required />
+                                </label>
+
+                                <label>
+                                    Calibration Interval (days) *
+                                    <input type="number" id="intervalDays" min="1" max="3650" value="365" required />
+                                </label>
+                            </div>
+
+                            <p id="formError" class="form-error" role="alert"></p>
+
+                            <div class="form-actions">
+                                <button type="button" id="cancelModalBtn" class="secondary-btn">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="primary-btn">
+                                    Save Instrument
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+
+            </section>
+
+            <section class="stats-grid" aria-label="Instrument statistics">
+                <article class="stat-card">
+                    <span class="stat-label">Total Instruments</span>
+                    <strong id="totalCount">8</strong>
+                    <span class="stat-note">Registered assets</span>
+                </article>
+                <article class="stat-card">
+                    <span class="stat-label">Valid</span>
+                    <strong id="validCount">5</strong>
+                    <span class="stat-note">Within calibration period</span>
+                </article>
+                <article class="stat-card warning-card">
+                    <span class="stat-label">Due Soon</span>
+                    <strong id="dueCount">2</strong>
+                    <span class="stat-note">Due within 30 days</span>
+                </article>
+                <article class="stat-card danger-card">
+                    <span class="stat-label">Overdue</span>
+                    <strong id="overdueCount">1</strong>
+                    <span class="stat-note">Requires review</span>
+                </article>
+            </section>
+
+            <section class="content-grid">
+                <article class="panel chart-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h3>Calibration Overview</h3>
+                            <p>Instrument status distribution</p>
+                        </div>
+                        <span class="tag">Live summary</span>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="statusChart" aria-label="Calibration status chart"></canvas>
+                    </div>
+                </article>
+
+                <article id="schedule" class="panel schedule-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h3>Attention Required</h3>
+                            <p>Upcoming and overdue instruments</p>
+                        </div>
+                    </div>
+                    <div id="attentionList" class="attention-list">
+                        <p class="empty-state">Loading calibration schedule...</p>
+                    </div>
+                </article>
+            </section>
+
+            <section id="instruments" class="panel inventory-panel">
+                <div class="panel-heading inventory-heading">
+                    <div>
+                        <h3>Instrument Inventory</h3>
+                        <p>Manage registered measurement equipment</p>
+                    </div>
+                    <input id="searchInput" type="search" placeholder="Search instruments..."
+                        aria-label="Search instruments" />
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Asset ID</th>
+                                <th>Instrument</th>
+                                <th>Location</th>
+                                <th>Last Calibration</th>
+                                <th>Next Due Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="instrumentTableBody">
+                            <tr>
+                                <td colspan="6">Loading instrument records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+<!-- Step 3: Calibration History -->
+<section id="history" class="panel inventory-panel">
+    <div class="panel-heading inventory-heading">
+        <div>
+            <h3>Calibration History</h3>
+            <p>Track previous calibration activities and results</p>
+        </div>
+
+        <button
+            type="button"
+            id="addCalibrationBtn"
+            class="primary-btn"
+        >
+            + Add Calibration
+        </button>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset ID</th>
+                    <th>Instrument</th>
+                    <th>Calibration Date</th>
+                    <th>Result</th>
+                    <th>Technician</th>
+                    <th>Observations</th>
+                </tr>
+            </thead>
+
+            <tbody id="calibrationHistoryBody">
+                <tr>
+                    <td colspan="6">
+                        No calibration history recorded yet.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+            <footer class="footer">
+                CalibraTrack · Portfolio demonstration · Sample data only
+            </footer>
+        </main>
+    </div>
+</body>
+
+</html>
